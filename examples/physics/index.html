@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Growth Game Engine - Physics Example</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a2e;
+        color: #eee;
+      }
+
+      h1 {
+        text-align: center;
+        color: #00d9ff;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      #gameCanvas {
+        display: block;
+        margin: 20px auto;
+        border: 2px solid #00d9ff;
+        background: #0f3460;
+      }
+
+      .info {
+        background: #16213e;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border: 1px solid #0f3460;
+      }
+
+      .info h3 {
+        color: #00d9ff;
+        margin-top: 0;
+      }
+
+      .info ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+
+      .info li {
+        margin: 8px 0;
+        color: #ccc;
+        line-height: 1.5;
+      }
+
+      .highlight {
+        color: #00d9ff;
+        font-weight: bold;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .feature-box {
+        background: #16213e;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #0f3460;
+      }
+
+      .feature-box h4 {
+        color: #00d9ff;
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .feature-box p {
+        margin: 0;
+        color: #aaa;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .console-output {
+        background: #0f3460;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #00ff00;
+        margin-top: 10px;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+
+      .algorithm-info {
+        background: #16213e;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border: 1px solid #0f3460;
+      }
+
+      .algorithm-info h4 {
+        color: #00d9ff;
+        margin-top: 0;
+      }
+
+      .algorithm-info code {
+        background: #0f3460;
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: #00d9ff;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>⚛️ Growth Game Engine - Physics System Demo</h1>
+
+      <canvas id="gameCanvas"></canvas>
+
+      <div class="info">
+        <h3>📖 사용 방법</h3>
+        <ul>
+          <li><span class="highlight">마우스 클릭</span>: Raycast 발사 - 물체를 명중시켜 충격을 줍니다</li>
+          <li><span class="highlight">브라우저 콘솔</span>: 충돌 이벤트 및 Raycast 결과를 확인하세요 (F12)</li>
+        </ul>
+        <p style="color: #aaa; font-size: 12px; margin-top: 10px;">
+          💡 물리 시뮬레이션은 60Hz 고정 타임스텝으로 실행됩니다. 화면 왼쪽 상단에서 FPS를 확인하세요.
+        </p>
+      </div>
+
+      <div class="features">
+        <div class="feature-box">
+          <h4>🎯 중력 시뮬레이션</h4>
+          <p>박스들이 중력(980 pixels/s²)에 따라 자연스럽게 떨어집니다. RigidBody의 useGravity 옵션을 사용합니다.</p>
+        </div>
+
+        <div class="feature-box">
+          <h4>🏀 반발 효과</h4>
+          <p>공들은 PhysicsMaterial.bouncy(restitution: 0.9)를 사용하여 높게 튕깁니다. 에너지 보존 법칙을 시뮬레이션합니다.</p>
+        </div>
+
+        <div class="feature-box">
+          <h4>🧊 마찰 시뮬레이션</h4>
+          <p>왼쪽 박스는 PhysicsMaterial.ice(friction: 0.05)로 미끄럽게 이동합니다. Coulomb's Law를 적용합니다.</p>
+        </div>
+
+        <div class="feature-box">
+          <h4>🚪 Trigger 영역</h4>
+          <p>오른쪽 하단은 Trigger 영역입니다. 물리 반응 없이 진입/퇴장 이벤트만 발생합니다.</p>
+        </div>
+
+        <div class="feature-box">
+          <h4>🎯 Raycast 시스템</h4>
+          <p>마우스 클릭 시 화면 상단에서 클릭 지점으로 Ray를 발사합니다. 충돌 지점, 거리, 법선 벡터를 계산합니다.</p>
+        </div>
+
+        <div class="feature-box">
+          <h4>💥 충돌 해결</h4>
+          <p>Impulse 기반 충돌 해결과 Positional Correction을 사용하여 물체들이 자연스럽게 상호작용합니다.</p>
+        </div>
+      </div>
+
+      <div class="algorithm-info">
+        <h4>🔬 사용된 알고리즘</h4>
+        <p style="color: #ccc; margin: 10px 0; line-height: 1.8;">
+          <strong>충돌 감지:</strong>
+          <code>SAT (Separating Axis Theorem)</code> for AABB-AABB,
+          <code>Distance Check</code> for Circle-Circle,
+          <code>Closest Point</code> for AABB-Circle
+        </p>
+        <p style="color: #ccc; margin: 10px 0; line-height: 1.8;">
+          <strong>충돌 해결:</strong>
+          <code>Impulse-based Resolution</code>,
+          <code>Positional Correction (40%)</code>,
+          <code>Coulomb Friction</code>
+        </p>
+        <p style="color: #ccc; margin: 10px 0; line-height: 1.8;">
+          <strong>최적화:</strong>
+          <code>Fixed Timestep (60Hz)</code>,
+          <code>Sleep System</code>,
+          <code>Brute Force Broad Phase</code>
+        </p>
+      </div>
+    </div>
+
+    <script src="../../dist/physics-example.bundle.js"></script>
+  </body>
+</html>

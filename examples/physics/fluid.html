@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>유체 시뮬레이션 - Growth Engine</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      #gameCanvas {
+        border: 3px solid #fff;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        background: #ecf0f1;
+      }
+
+      .info {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .info h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+      }
+
+      .info ul {
+        margin: 5px 0;
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="info">
+      <h3>🌊 유체 시뮬레이션</h3>
+      <ul>
+        <li><strong>왼쪽 클릭:</strong> 파란 유체 생성</li>
+        <li><strong>오른쪽 클릭:</strong> 빨간 유체 생성</li>
+        <li>입자들이 유체처럼 흘러내립니다</li>
+      </ul>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+  </body>
+</html>

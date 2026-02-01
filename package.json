@@ -1,0 +1,32 @@
+{
+  "name": "lite2d",
+  "version": "0.1.0",
+  "description": "2D Pixel 기반 웹 게임 프레임워크",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "game",
+    "engine",
+    "2d",
+    "canvas",
+    "typescript",
+    "pixel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.3.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "^4.15.0"
+  }
+}
