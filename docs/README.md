@@ -35,6 +35,7 @@ Lite2D는 2D 픽셀 기반 웹 게임을 위한 경량 게임 프레임워크입
 
 ### Rendering
 - **Sprite**: 2D 이미지 렌더링
+- **AnimatedSprite**: 스프라이트 시트 애니메이션
 - **Camera**: 카메라 및 뷰포트 관리
 
 ### Input

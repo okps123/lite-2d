@@ -1,6 +1,7 @@
 /**
  * AssetLoader 클래스
  * 이미지, 오디오 등의 리소스를 비동기로 로드하고 캐싱합니다.
+ * Engine에서 인스턴스를 생성하고 관리합니다. (engine.assetLoader로 접근)
  */
 export class AssetLoader {
   private _images: Map<string, HTMLImageElement> = new Map();

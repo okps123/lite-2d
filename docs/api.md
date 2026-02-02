@@ -8,6 +8,7 @@
 - [Transform](#transform)
 - [Component](#component)
 - [Sprite](#sprite)
+- [AnimatedSprite](#animatedsprite)
 - [Camera](#camera)
 - [InputManager](#inputmanager)
 - [AssetLoader](#assetloader)
@@ -731,6 +732,133 @@ setImageDirect(image: HTMLImageElement): void
 setSourceRect(x: number, y: number, width: number, height: number): void
 ```
 스프라이트시트 영역 설정.
+
+---
+
+## AnimatedSprite
+
+스프라이트 시트 기반 애니메이션을 지원하는 Sprite입니다. Sprite를 상속합니다.
+
+### 생성자
+
+```typescript
+constructor(name?: string)
+```
+
+**Example:**
+```typescript
+const animSprite = new AnimatedSprite('PlayerAnim');
+```
+
+### 속성
+
+#### currentFrame
+```typescript
+get currentFrame(): number
+set currentFrame(value: number)
+```
+현재 프레임 인덱스.
+
+#### frameCount
+```typescript
+get frameCount(): number
+```
+총 프레임 수.
+
+#### frameDuration
+```typescript
+get frameDuration(): number
+set frameDuration(value: number)
+```
+프레임 당 지속 시간 (초).
+
+#### isPlaying
+```typescript
+get isPlaying(): boolean
+```
+애니메이션 재생 중 여부.
+
+#### loop
+```typescript
+get loop(): boolean
+set loop(value: boolean)
+```
+루프 여부.
+
+### 메서드
+
+#### setFrameSize()
+```typescript
+setFrameSize(width: number, height: number, scale?: number): void
+```
+프레임 크기 설정.
+
+**Parameters:**
+- `width`: 프레임 너비
+- `height`: 프레임 높이
+- `scale`: 렌더링 스케일 (기본값 1)
+
+**Example:**
+```typescript
+// 96x64 프레임을 2배 크기로 렌더링
+animSprite.setFrameSize(96, 64, 2);
+```
+
+#### setAnimation()
+```typescript
+setAnimation(frameCount: number, frameDuration?: number): void
+```
+애니메이션 설정.
+
+**Parameters:**
+- `frameCount`: 총 프레임 수
+- `frameDuration`: 프레임 당 지속 시간 (초, 기본값 0.1)
+
+**Example:**
+```typescript
+// 9프레임, 0.12초 간격
+animSprite.setAnimation(9, 0.12);
+```
+
+#### play()
+```typescript
+play(): void
+```
+애니메이션 재생.
+
+#### pause()
+```typescript
+pause(): void
+```
+애니메이션 일시정지.
+
+#### stop()
+```typescript
+stop(): void
+```
+애니메이션 정지 및 첫 프레임으로 이동.
+
+#### gotoFrame()
+```typescript
+gotoFrame(frame: number): void
+```
+특정 프레임으로 이동.
+
+### 사용 예시
+
+```typescript
+// 스프라이트 시트 애니메이션 설정
+const player = new AnimatedSprite('Player');
+player.setImageDirect(await assetLoader.loadImage('walk', 'walk_strip8.png'));
+player.setFrameSize(96, 64, 2);  // 96x64 프레임, 2배 확대
+player.setAnimation(8, 0.1);     // 8프레임, 0.1초 간격
+
+// 애니메이션 제어
+player.play();
+player.pause();
+player.stop();
+player.gotoFrame(3);
+```
 
 ---
 

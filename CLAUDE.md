@@ -95,6 +95,7 @@ rb.addImpulse(new Vector2(0, -500));
 | `Transform` | Position/rotation/scale (dirty flag caching) |
 | `Component` | Reusable functionality unit |
 | `Sprite` | 2D image rendering |
+| `AnimatedSprite` | Sprite sheet animation |
 | `Camera` | Viewport, coordinate transformation |
 | `InputManager` | Keyboard/mouse input |
 | `AssetLoader` | Resource loading and caching |

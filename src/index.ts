@@ -12,6 +12,7 @@ export { Component } from './core/Component';
 
 // Rendering
 export { Sprite } from './rendering/Sprite';
+export { AnimatedSprite } from './rendering/AnimatedSprite';
 export { Camera } from './rendering/Camera';
 
 // Input
