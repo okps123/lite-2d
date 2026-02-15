@@ -21,9 +21,30 @@ export class InputManager {
   private _composedText: string | null = null;
 
   private _canvas: HTMLCanvasElement;
+  private _supportsPointerEvents: boolean;
+  private _activePrimaryPointerId: number | null = null;
+
+  private readonly _onKeyDownHandler = (event: KeyboardEvent) => this.onKeyDown(event);
+  private readonly _onKeyUpHandler = (event: KeyboardEvent) => this.onKeyUp(event);
+  private readonly _onCompositionStartHandler = (event: CompositionEvent) => this.onCompositionStart(event);
+  private readonly _onCompositionUpdateHandler = (event: CompositionEvent) => this.onCompositionUpdate(event);
+  private readonly _onCompositionEndHandler = (event: CompositionEvent) => this.onCompositionEnd(event);
+  private readonly _onMouseMoveHandler = (event: MouseEvent) => this.onMouseMove(event);
+  private readonly _onMouseDownHandler = (event: MouseEvent) => this.onMouseDown(event);
+  private readonly _onMouseUpHandler = (event: MouseEvent) => this.onMouseUp(event);
+  private readonly _onPointerMoveHandler = (event: PointerEvent) => this.onPointerMove(event);
+  private readonly _onPointerDownHandler = (event: PointerEvent) => this.onPointerDown(event);
+  private readonly _onPointerUpHandler = (event: PointerEvent) => this.onPointerUp(event);
+  private readonly _onPointerCancelHandler = (event: PointerEvent) => this.onPointerCancel(event);
+  private readonly _onTouchStartHandler = (event: TouchEvent) => this.onTouchStart(event);
+  private readonly _onTouchMoveHandler = (event: TouchEvent) => this.onTouchMove(event);
+  private readonly _onTouchEndHandler = (event: TouchEvent) => this.onTouchEnd(event);
+  private readonly _onTouchCancelHandler = (event: TouchEvent) => this.onTouchCancel(event);
+  private readonly _onContextMenuHandler = (event: MouseEvent) => event.preventDefault();
 
   constructor(canvas: HTMLCanvasElement) {
     this._canvas = canvas;
+    this._supportsPointerEvents = typeof window !== 'undefined' && 'PointerEvent' in window;
     this.setupEventListeners();
   }
 
@@ -32,21 +53,40 @@ export class InputManager {
    */
   private setupEventListeners(): void {
     // 키보드 이벤트
-    window.addEventListener('keydown', this.onKeyDown.bind(this));
-    window.addEventListener('keyup', this.onKeyUp.bind(this));
+    window.addEventListener('keydown', this._onKeyDownHandler);
+    window.addEventListener('keyup', this._onKeyUpHandler);
 
     // IME 조합 이벤트 (한글, 일본어 등)
-    window.addEventListener('compositionstart', this.onCompositionStart.bind(this));
-    window.addEventListener('compositionupdate', this.onCompositionUpdate.bind(this));
-    window.addEventListener('compositionend', this.onCompositionEnd.bind(this));
+    window.addEventListener('compositionstart', this._onCompositionStartHandler);
+    window.addEventListener('compositionupdate', this._onCompositionUpdateHandler);
+    window.addEventListener('compositionend', this._onCompositionEndHandler);
 
-    // 마우스 이벤트
-    this._canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this._canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this._canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+    if (this._supportsPointerEvents) {
+      this._canvas.style.touchAction = 'none';
+
+      this._canvas.addEventListener('pointermove', this._onPointerMoveHandler, { passive: true });
+      this._canvas.addEventListener('pointerdown', this._onPointerDownHandler, { passive: false });
+      this._canvas.addEventListener('pointerup', this._onPointerUpHandler, { passive: false });
+      this._canvas.addEventListener('pointercancel', this._onPointerCancelHandler, { passive: false });
+    } else {
+      this._canvas.addEventListener('mousemove', this._onMouseMoveHandler);
+      this._canvas.addEventListener('mousedown', this._onMouseDownHandler);
+      this._canvas.addEventListener('mouseup', this._onMouseUpHandler);
+
+      this._canvas.addEventListener('touchstart', this._onTouchStartHandler, { passive: false });
+      this._canvas.addEventListener('touchmove', this._onTouchMoveHandler, { passive: false });
+      this._canvas.addEventListener('touchend', this._onTouchEndHandler, { passive: false });
+      this._canvas.addEventListener('touchcancel', this._onTouchCancelHandler, { passive: false });
+    }
 
     // 컨텍스트 메뉴 비활성화 (우클릭)
-    this._canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    this._canvas.addEventListener('contextmenu', this._onContextMenuHandler);
+  }
+
+  private updateMousePosition(clientX: number, clientY: number): void {
+    const rect = this._canvas.getBoundingClientRect();
+    this._mousePosition.x = clientX - rect.left;
+    this._mousePosition.y = clientY - rect.top;
   }
 
   /**
@@ -98,15 +138,14 @@ export class InputManager {
    * 마우스 이동 이벤트
    */
   private onMouseMove(event: MouseEvent): void {
-    const rect = this._canvas.getBoundingClientRect();
-    this._mousePosition.x = event.clientX - rect.left;
-    this._mousePosition.y = event.clientY - rect.top;
+    this.updateMousePosition(event.clientX, event.clientY);
   }
 
   /**
    * 마우스 버튼 다운 이벤트
    */
   private onMouseDown(event: MouseEvent): void {
+    this.updateMousePosition(event.clientX, event.clientY);
     this._mouseButtons.set(event.button, true);
   }
 
@@ -114,7 +153,90 @@ export class InputManager {
    * 마우스 버튼 업 이벤트
    */
   private onMouseUp(event: MouseEvent): void {
+    this.updateMousePosition(event.clientX, event.clientY);
     this._mouseButtons.set(event.button, false);
+  }
+
+  private onPointerMove(event: PointerEvent): void {
+    this.updateMousePosition(event.clientX, event.clientY);
+  }
+
+  private onPointerDown(event: PointerEvent): void {
+    this.updateMousePosition(event.clientX, event.clientY);
+
+    if (event.pointerType !== 'mouse') {
+      event.preventDefault();
+    }
+
+    if (event.isPrimary && this._activePrimaryPointerId === null) {
+      this._activePrimaryPointerId = event.pointerId;
+    }
+
+    const button = event.pointerType === 'mouse' ? event.button : 0;
+    if (event.pointerType === 'mouse' || event.pointerId === this._activePrimaryPointerId) {
+      this._mouseButtons.set(button, true);
+    }
+  }
+
+  private onPointerUp(event: PointerEvent): void {
+    this.updateMousePosition(event.clientX, event.clientY);
+
+    if (event.pointerType !== 'mouse') {
+      event.preventDefault();
+    }
+
+    const button = event.pointerType === 'mouse' ? event.button : 0;
+    if (event.pointerType === 'mouse' || event.pointerId === this._activePrimaryPointerId) {
+      this._mouseButtons.set(button, false);
+    }
+
+    if (event.pointerId === this._activePrimaryPointerId) {
+      this._activePrimaryPointerId = null;
+    }
+  }
+
+  private onPointerCancel(event: PointerEvent): void {
+    this.updateMousePosition(event.clientX, event.clientY);
+    this._mouseButtons.set(0, false);
+
+    if (event.pointerId === this._activePrimaryPointerId) {
+      this._activePrimaryPointerId = null;
+    }
+  }
+
+  private onTouchStart(event: TouchEvent): void {
+    event.preventDefault();
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    this.updateMousePosition(touch.clientX, touch.clientY);
+    this._mouseButtons.set(0, true);
+  }
+
+  private onTouchMove(event: TouchEvent): void {
+    event.preventDefault();
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    this.updateMousePosition(touch.clientX, touch.clientY);
+  }
+
+  private onTouchEnd(event: TouchEvent): void {
+    event.preventDefault();
+
+    const touch = event.changedTouches[0];
+    if (touch) {
+      this.updateMousePosition(touch.clientX, touch.clientY);
+    }
+
+    this._mouseButtons.set(0, false);
+  }
+
+  private onTouchCancel(event: TouchEvent): void {
+    event.preventDefault();
+    this._mouseButtons.set(0, false);
   }
 
   /**
@@ -279,14 +401,28 @@ export class InputManager {
    * 이벤트 리스너 정리
    */
   destroy(): void {
-    window.removeEventListener('keydown', this.onKeyDown.bind(this));
-    window.removeEventListener('keyup', this.onKeyUp.bind(this));
-    window.removeEventListener('compositionstart', this.onCompositionStart.bind(this));
-    window.removeEventListener('compositionupdate', this.onCompositionUpdate.bind(this));
-    window.removeEventListener('compositionend', this.onCompositionEnd.bind(this));
-    this._canvas.removeEventListener('mousemove', this.onMouseMove.bind(this));
-    this._canvas.removeEventListener('mousedown', this.onMouseDown.bind(this));
-    this._canvas.removeEventListener('mouseup', this.onMouseUp.bind(this));
+    window.removeEventListener('keydown', this._onKeyDownHandler);
+    window.removeEventListener('keyup', this._onKeyUpHandler);
+    window.removeEventListener('compositionstart', this._onCompositionStartHandler);
+    window.removeEventListener('compositionupdate', this._onCompositionUpdateHandler);
+    window.removeEventListener('compositionend', this._onCompositionEndHandler);
+
+    if (this._supportsPointerEvents) {
+      this._canvas.removeEventListener('pointermove', this._onPointerMoveHandler);
+      this._canvas.removeEventListener('pointerdown', this._onPointerDownHandler);
+      this._canvas.removeEventListener('pointerup', this._onPointerUpHandler);
+      this._canvas.removeEventListener('pointercancel', this._onPointerCancelHandler);
+    } else {
+      this._canvas.removeEventListener('mousemove', this._onMouseMoveHandler);
+      this._canvas.removeEventListener('mousedown', this._onMouseDownHandler);
+      this._canvas.removeEventListener('mouseup', this._onMouseUpHandler);
+      this._canvas.removeEventListener('touchstart', this._onTouchStartHandler);
+      this._canvas.removeEventListener('touchmove', this._onTouchMoveHandler);
+      this._canvas.removeEventListener('touchend', this._onTouchEndHandler);
+      this._canvas.removeEventListener('touchcancel', this._onTouchCancelHandler);
+    }
+
+    this._canvas.removeEventListener('contextmenu', this._onContextMenuHandler);
   }
 }
 
