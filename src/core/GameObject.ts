@@ -105,10 +105,39 @@ export class GameObject {
 
     this._sortingOrder = value;
 
-    // Scene에 재정렬 요청 (루트 오브젝트인 경우에만)
     if (this._scene && this._parent === null) {
       this._scene.reorderGameObject(this);
+      return;
     }
+
+    if (this._parent !== null) {
+      this._parent.reorderChild(this);
+    }
+  }
+
+  private findChildInsertPosition(sortingOrder: number): number {
+    let left = 0;
+    let right = this._children.length;
+
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2);
+      if (this._children[mid].sortingOrder <= sortingOrder) {
+        left = mid + 1;
+      } else {
+        right = mid;
+      }
+    }
+
+    return left;
+  }
+
+  private reorderChild(child: GameObject): void {
+    const index = this._children.indexOf(child);
+    if (index === -1) return;
+
+    this._children.splice(index, 1);
+    const insertIndex = this.findChildInsertPosition(child.sortingOrder);
+    this._children.splice(insertIndex, 0, child);
   }
 
   /**
@@ -270,8 +299,8 @@ export class GameObject {
       child._parent.removeChild(child);
     }
 
-    // 자식 추가
-    this._children.push(child);
+    const insertIndex = this.findChildInsertPosition(child.sortingOrder);
+    this._children.splice(insertIndex, 0, child);
     child._parent = this;
     child._scene = this._scene;
 
